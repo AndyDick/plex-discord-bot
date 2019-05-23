@@ -100,9 +100,9 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] Make !nextpage count continue to increase rather than restarting each page
 * [ ] move to next gen javascript w/babel
 * [ ] use uri/headers for plex.query as shown here:
-* [ ] albums queuing:
+* [ ] albums queuing selection:
 * [ ] artist queuing:
-* [ ] randomizing queue:
+
 
 ```
 return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL' } }).then(result => {
@@ -116,3 +116,5 @@ return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL
 * [x] make code look less shitty
 * [x] fix !stop again
 * [x] make playlists
+* [x] albums queuing:
+* [x] randomizing queue: `!shuffle`
