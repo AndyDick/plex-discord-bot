@@ -1,12 +1,12 @@
 {
   "name": "plexbot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a plex bot for discord",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "danxfisher",
+  "author": "modified by jadonwolffs",
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^3.0.2",
