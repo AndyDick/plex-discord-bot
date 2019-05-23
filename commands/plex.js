@@ -52,6 +52,7 @@ var discordclient = null;
 function findSong(query, offset, pageSize, message) {
   plex.query('/search/?type=10&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
     tracks = res.MediaContainer.Metadata;
+    console.log("tracks "+ tracks);
 
     var resultSize = res.MediaContainer.size;
     plexQuery = query; // set query for !nextpage
@@ -63,7 +64,7 @@ function findSong(query, offset, pageSize, message) {
     if (resultSize == 1 && offset == 0) {
       songKey = 0;
       // add song to queue
-      addToQueue(songKey, tracks, message);
+      addToQueue(songKey, tracks, message,false);
     }
     else if (resultSize > 1) {
       for (var t = 0; t < tracks.length; t++) {
@@ -90,45 +91,25 @@ function findSong(query, offset, pageSize, message) {
 function findAlbum(query, offset, pageSize, message) {
   plex.query('/search/?type=9&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
     albums = res.MediaContainer.Metadata;
-
-    var resultSize = res.MediaContainer.size;
-    plexQuery = query; // set query for !nextpage
-    plexOffset = plexOffset + resultSize; // set paging
-
-    var messageLines = '\n';
-    var artist = '';
-
-    if (resultSize == 1 && offset == 0) {
-      songKey = 0;
-      // add song to queue
-      addToQueue(songKey, albums, message);
-    }
-    else if (resultSize > 1) {
-      for (var t = 0; t < tracks.length; t++) {
-        if ('originalTitle' in tracks[t]) {
-          artist = albums[t].originalTitle;
-        }
-        else {
-          artist = albums[t].grandparentTitle;
-        }
-        messageLines += (t+1) + ' - ' + artist + ' - ' + albums[t].title + '\n';
+     console.log(`songs ${albums[0].key}`);
+    plex.query(albums[0].key).then(function(res1) {
+      console.log(`album artist ${res1.MediaContainer.title1}`);
+      console.log(`album title ${res1.MediaContainer.title2}`);
+      console.log(`album year ${res1.MediaContainer.parentYear}`);
+      console.log(`album count ${res1.MediaContainer.size}`);
+      addToQueue(0, res1.MediaContainer.Metadata, message, false);
+      for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
+        addToQueue(i, res1.MediaContainer.Metadata, message, true);
       }
-      messageLines += `\n***${prefix}playsong (number)** to play your song.*`;
-      messageLines += `\n***${prefix}nextpage** if the song you want isn\'t listed*`;
-      message.reply(messageLines);
-    }
-    else {
-      message.reply('** I can\'t find a song with that title.**');
-    }
-  }, function (err) {
-    console.log('narp');
+    });
+
   });
 }
-
 // not sure if ill need this
-function addToQueue(songNumber, tracks, message) {
+function addToQueue(songNumber, tracks, message, album) {
   if (songNumber > -1){
     var key = tracks[songNumber].Media[0].Part[0].key;
+    console.log('key being added '+key);
     var artist = '';
     var title = tracks[songNumber].title;
     if ('originalTitle' in tracks[songNumber]) {
@@ -140,10 +121,10 @@ function addToQueue(songNumber, tracks, message) {
 
     songQueue.push({'artist' : artist, 'title': title, 'key': key});
     if (songQueue.length > 1) {
-      message.reply(`You have added ** ${artist} - ${title} ** to the queue.\n\n***${preifix}viewqueue** to view the queue.*`);
+      // message.reply(`You have added ** ${artist} - ${title} ** to the queue.\n\n***${prefix}viewqueue** to view the queue.*`);
     }
 
-    if (!isPlaying) {
+    if (!isPlaying && !album) {
       playSong(message);
     }
 
@@ -156,7 +137,7 @@ function addToQueue(songNumber, tracks, message) {
 // play song when provided with index number, track, and message
 function playSong(message) {
   voiceChannel = message.member.voiceChannel;
-
+  // console.log(`message ${message}`);
   if (voiceChannel) {
     voiceChannel.join().then(function(connection) {
       conn = connection;
@@ -314,7 +295,7 @@ var commands = {
       songNumber = parseInt(songNumber);
       songNumber = songNumber - 1;
       console.log(`${message.author.username} selected ${songNumber} from the list`);
-      addToQueue(songNumber, tracks, message);
+      addToQueue(songNumber, tracks, message,false);
     }
   },
   'removesong' : {
