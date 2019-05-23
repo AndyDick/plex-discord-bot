@@ -23,7 +23,7 @@ module.exports = function(client) {
       var gcmd = genCommands[cmdTxt];
       if (pcmd){
         try {
-          console.log('plex command');
+          // console.log('plex command');
           pcmd.process(client, message, query);
         }
         catch (e) {
@@ -32,7 +32,7 @@ module.exports = function(client) {
       }
       else if(gcmd){
         try {
-          console.log('general command');
+          // console.log('general command');
           gcmd.process(client, message, query);
         }
         catch (e) {
