@@ -21,7 +21,7 @@
     2. To get your machineId or "machineIdentifier", follow the instructions here: https://support.plex.tv/hc/en-us/articles/201638786-Plex-Media-Server-URL-Commands
         * In the first example under "Base Server Capabilities", you can see the information returned when you type `http://[PMS_IP_Address]:32400/?X-Plex-Token=YourTokenGoesHere` into your address bar of a web browser.  Copy everything between the quotes for the parameter "machineIdentifier" and paste it into the "machineId" property in `config/plex template.js`
     3. The identifier, product, version, and deviceName can be anything you want
-8. The last thing you want to do is rename the config files to `plex.js` and `keys.js` which should be ignored by git to protect your privacy.
+8. The last thing you want to do locally is rename the config files to `plex.js` and `keys.js` which should be ignored by git to protect your privacy.
 9. Once you have the configs set up correctly, you'll need to authorize your bot on a server you have administrative access to.  For documentation, you can read: https://discordapp.com/developers/docs/topics/oauth2#bots.  The steps are as follows:
     1. Go to `https://discordapp.com/api/oauth2/authorize?client_id=[CLIENT_ID]&scope=bot&permissions=1` where [CLIENT_ID] is the Discord App Client ID
     2. Select **Add a bot to a server** and select the server to add it to
@@ -100,6 +100,9 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] Make !nextpage count continue to increase rather than restarting each page
 * [ ] move to next gen javascript w/babel
 * [ ] use uri/headers for plex.query as shown here:
+* [ ] albums queuing:
+* [ ] artist queuing:
+* [ ] randomizing queue:
 
 ```
 return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL' } }).then(result => {
