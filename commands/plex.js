@@ -91,7 +91,8 @@ function findSong(query, offset, pageSize, message) {
 function findAlbum(query, offset, pageSize, message) {
   plex.query('/search/?type=9&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
     albums = res.MediaContainer.Metadata;
-     console.log(`songs ${albums[0].key}`);
+    console.log(`album key ${albums[0].key}`);
+
     plex.query(albums[0].key).then(function(res1) {
       console.log(`album artist ${res1.MediaContainer.title1}`);
       console.log(`album title ${res1.MediaContainer.title2}`);
@@ -101,8 +102,11 @@ function findAlbum(query, offset, pageSize, message) {
       for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
         addToQueue(i, res1.MediaContainer.Metadata, message, true);
       }
+    }, function (err) {
+      console.log('narp');
     });
-
+  }, function (err) {
+    console.log('narp');
   });
 }
 // not sure if ill need this
@@ -190,7 +194,8 @@ function playSong(message) {
 
 // run at end of songQueue / remove bot from voiceChannel
 function playbackCompletion(message) {
-  genCommands['post'].process(discordclient, message);
+  // genCommands['post'].process(discordclient, message,50);
+  message.channel.bulkDelete(50, true);
   conn.disconnect();
   voiceChannel.leave();
   isPlaying = false;
@@ -415,7 +420,25 @@ var commands = {
     description: 'sets playback volume (of future songs)',
     process: function(client, message, query) {
       console.log(`${message.author.username} set the volume to ${query}`);
+      volume = Number(query);
+    }
+  },
+  'shuffle' : {
+    usage: '',
+    description: 'shuffles the current queue',
+    process: function(client, message, query) {
+      console.log(`${message.author.username} shuffled the queue`);
+      var tempQueue = songQueue.slice(1);
+      for (i = tempQueue.length - 1; i > 0; i--) {
+          j = Math.floor(Math.random() * (i + 1));
+          x = tempQueue[i];
+          tempQueue[i] = tempQueue[j];
+          tempQueue[j] = x;
+      };
 
+      for (var i = 1; i < songQueue.length; i++) {
+        songQueue[i] = tempQueue[i-1];
+      }
     }
   },
   'playalbum' : {
