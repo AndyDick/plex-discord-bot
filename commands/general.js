@@ -55,14 +55,14 @@ var commands = {
       message.reply('*pong.*');
     }
   },
-  'post' : {
-    usage: '',
-    description: 'clear',
-    process: function(client, message) {
-      // console.log(`automatically cleared music`);
-       message.channel.bulkDelete(10, true);
-    }
-  },
+  // 'post' : {
+  //   usage: '',
+  //   description: 'clear',
+  //   process: function(client, message, num) {
+  //     // console.log(`automatically cleared music`);
+  //      message.channel.bulkDelete(num, true);
+  //   }
+  // },
 };
 
 module.exports = commands;
