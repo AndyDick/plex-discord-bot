@@ -1,13 +1,14 @@
-var prefix = '!';
-
 // plex api module -----------------------------------------------------------
 var PlexAPI = require('plex-api');
 
 // plex config ---------------------------------------------------------------
 var plexConfig = require('../config/plex');
+var botConfig = require('../config/bot');
+var prefix = botConfig.prefix;
 
 // plex commands -------------------------------------------------------------
 var plexCommands = require('../commands/plex');
+var genCommands = require('../commands/general');
 
 // plex client ---------------------------------------------------------------
 var plex = new PlexAPI({
@@ -43,9 +44,10 @@ var songQueue = []; // will be used for queueing songs
 var dispatcher = null;
 var voiceChannel = null;
 var conn = null;
+var volume = 0.2;
 
 // plex functions ------------------------------------------------------------
-
+var discordclient = null;
 // find song when provided with query string, offset, pagesize, and message
 function findSong(query, offset, pageSize, message) {
   plex.query('/search/?type=10&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
@@ -73,8 +75,46 @@ function findSong(query, offset, pageSize, message) {
         }
         messageLines += (t+1) + ' - ' + artist + ' - ' + tracks[t].title + '\n';
       }
-      messageLines += '\n***!playsong (number)** to play your song.*';
-      messageLines += '\n***!nextpage** if the song you want isn\'t listed*';
+      messageLines += `\n***${prefix}playsong (number)** to play your song.*`;
+      messageLines += `\n***${prefix}nextpage** if the song you want isn\'t listed*`;
+      message.reply(messageLines);
+    }
+    else {
+      message.reply('** I can\'t find a song with that title.**');
+    }
+  }, function (err) {
+    console.log('narp');
+  });
+}
+
+function findAlbum(query, offset, pageSize, message) {
+  plex.query('/search/?type=9&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
+    albums = res.MediaContainer.Metadata;
+
+    var resultSize = res.MediaContainer.size;
+    plexQuery = query; // set query for !nextpage
+    plexOffset = plexOffset + resultSize; // set paging
+
+    var messageLines = '\n';
+    var artist = '';
+
+    if (resultSize == 1 && offset == 0) {
+      songKey = 0;
+      // add song to queue
+      addToQueue(songKey, albums, message);
+    }
+    else if (resultSize > 1) {
+      for (var t = 0; t < tracks.length; t++) {
+        if ('originalTitle' in tracks[t]) {
+          artist = albums[t].originalTitle;
+        }
+        else {
+          artist = albums[t].grandparentTitle;
+        }
+        messageLines += (t+1) + ' - ' + artist + ' - ' + albums[t].title + '\n';
+      }
+      messageLines += `\n***${prefix}playsong (number)** to play your song.*`;
+      messageLines += `\n***${prefix}nextpage** if the song you want isn\'t listed*`;
       message.reply(messageLines);
     }
     else {
@@ -100,7 +140,7 @@ function addToQueue(songNumber, tracks, message) {
 
     songQueue.push({'artist' : artist, 'title': title, 'key': key});
     if (songQueue.length > 1) {
-      message.reply('You have added **' + artist + ' - ' + title + '** to the queue.\n\n***!viewqueue** to view the queue.*');
+      message.reply(`You have added ** ${artist} - ${title} ** to the queue.\n\n***${preifix}viewqueue** to view the queue.*`);
     }
 
     if (!isPlaying) {
@@ -134,7 +174,7 @@ function playSong(message) {
           playbackCompletion(message);
         }
       });
-      dispatcher.setVolume(0.2);
+      dispatcher.setVolume(volume);
     });
 
     // probbaly just change this to channel alert, not reply
@@ -169,6 +209,7 @@ function playSong(message) {
 
 // run at end of songQueue / remove bot from voiceChannel
 function playbackCompletion(message) {
+  genCommands['post'].process(discordclient, message);
   conn.disconnect();
   voiceChannel.leave();
   isPlaying = false;
@@ -211,6 +252,7 @@ var commands = {
         songQueue = []; // remove all songs from queue
 
         message.reply('**The queue has been cleared.**');
+        console.log(`${message.author.username} cleared queue of ${message.guild.name} in ${message.channel.name}`);
       }
       else {
         message.reply('**There are no songs in the queue.**');
@@ -229,8 +271,10 @@ var commands = {
     description: 'pauses current song if one is playing',
     process: function(client, message) {
       if (isPlaying) {
+        discordclient = client;
         dispatcher.pause(); // pause song
         isPaused = true;
+        console.log(`${message.author.username} paused playback of ${message.guild.name} in ${message.channel.name}`);
         var embedObj = {
           embed: {
             color: 16424969,
@@ -254,6 +298,8 @@ var commands = {
         plexQuery = null; // reset query for !nextpage
 
         findSong(query, plexOffset, plexPageSize, message);
+
+        console.log(`${message.author.username} requested ${query} be played on ${message.guild.name} in ${message.channel.name}`);
       }
       else {
         message.reply('**Please enter a song title**');
@@ -267,7 +313,7 @@ var commands = {
       var songNumber = query;
       songNumber = parseInt(songNumber);
       songNumber = songNumber - 1;
-
+      console.log(`${message.author.username} selected ${songNumber} from the list`);
       addToQueue(songNumber, tracks, message);
     }
   },
@@ -283,6 +329,7 @@ var commands = {
         if (songNumber > -1 && songNumber <= songQueue.length) {
           // remove by index (splice)
           var removedSong = songQueue.splice(songNumber, 1);
+          console.log(`${message.author.username} removed ${removedSong[0].title} - ${removedSong[0].artist} from the queue on ${message.guild.name} in ${message.channel.name}`);
           message.reply('**You have removed ' + removedSong[0].artist + ' - ' + removedSong[0].title + ' from the queue.**');
           // message that it has been removed
         }
@@ -302,6 +349,7 @@ var commands = {
       if (isPaused) {
 
         dispatcher.resume(); // run dispatcher.end events in playSong
+        console.log(`${message.author.username} resumed playback on ${message.guild.name} in ${message.channel.name}`);
         var embedObj = {
           embed: {
             color: 4251856,
@@ -320,6 +368,7 @@ var commands = {
     description: 'skips the current song if one is playing and plays the next song in queue if it exists',
     process: function(client, message) {
       if (isPlaying) {
+        console.log(`${message.author.username} skipped ${songQueue[0].title} - ${songQueue[0].artist} on ${message.guild.name} in ${message.channel.name}`);
         message.channel.send(songQueue[0].artist + ' - ' + songQueue[0].title + ' has been **skipped.**');
         dispatcher.end(); // run dispatcher.end events in playSong
       }
@@ -335,7 +384,7 @@ var commands = {
       if (isPlaying) {
         songQueue = []; // removes all songs from queue
         dispatcher.end(); // stop dispatcher from playing audio
-
+        console.log(`${message.author.username} stopped playback on ${message.guild.name} in ${message.channel.name}`);
         var embedObj = {
           embed: {
             color: 10813448,
@@ -361,9 +410,10 @@ var commands = {
         for (var t = 0; t < songQueue.length; t++) {
           messageLines += (t+1) + ' - ' + songQueue[t].artist + ' - ' + songQueue[t].title + '\n';
         }
+        console.log(`${message.author.username} viewed the current queue on ${message.guild.name} in ${message.channel.name}`);
 
-        messageLines += '\n***!removesong (number)** to remove a song*';
-        messageLines += '\n***!skip** to skip the current song*';
+        messageLines += `\n***${prefix}removesong <number>** to remove a song*`;
+        messageLines += `\n***${prefix}skip** to skip the current song*`;
 
         var embedObj = {
           embed: {
@@ -379,39 +429,30 @@ var commands = {
       }
     }
   },
-  'clear' : {
-    usage: '<num messages>',
-    description: 'deletes last messages',
-    process: function(client, message) {
-      try {
-        const args = message.content.slice(prefix.length).split(' ');
-        console.log('cleared messages');
-        let Member = message.member;
-        let server = message.guild;
-        let Channel = message.channel;
-        if (!Member.hasPermission("ADMINISTRATOR")) return; // Does nothing if the author does not have administrator permission.
-        let amount = parseInt(args[1],10); // amount = a number entered.
-        // console.log("amount ",amount);
-        // if (!amount) return errors.missArgs(Member, errorChannel, "r!clear 1-200 \`(number)\`"); // If amount is missing, then it raises an error.
-        let bool = false;
-        if (!Member.id === server.ownerID) { // Bypass for the server owner.
-            if (amount >= 400) return errorChannel.send(`:x: You can\'t clear more than 400 messages! ${Member}`); // If amount is over 200 then it raises an error.
-       } else {
-           bool = true;
-       }
-       let maxAmount;
-       if (amount > 49) maxAmount = 50;
-       else maxAmount = amount;
-       for (Channel.bulkDelete(maxAmount + 1, bool); amount >= 0; amount -= 50) {
-           if (amount > 49) maxAmount = 50;
-           else if (amount > 0) maxAmount = amount;
-           else break;
-           Channel.bulkDelete(maxAmount, bool);
-       }
-     }
-     catch (e) {
-      console.log("error when clearing messages"+e);
-     }
+  'volume' : {
+    usage: '',
+    description: 'sets playback volume (of future songs)',
+    process: function(client, message, query) {
+      console.log(`${message.author.username} set the volume to ${query}`);
+
+    }
+  },
+  'playalbum' : {
+    usage: '<album>',
+    description: 'bot will join voice channel and play album if one album available.  if more than one, bot will return a list to choose from',
+    process: function(client, message, query) {
+      // if song request exists
+      if (query.length > 0) {
+        plexOffset = 0; // reset paging
+        plexQuery = null; // reset query for !nextpage
+
+        // findSong(query, plexOffset, plexPageSize, message);
+        findAlbum(query, plexOffset, plexPageSize, message);
+        console.log(`${message.author.username} requested ${query} be played on ${message.guild.name} in ${message.channel.name}`);
+      }
+      else {
+        message.reply('**Please enter a song title**');
+      }
     }
   },
 };
