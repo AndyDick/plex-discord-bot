@@ -148,7 +148,7 @@ function playSong(message) {
       var url = PLEX_PLAY_START + songQueue[0].key + PLEX_PLAY_END;
 
       isPlaying = true;
-
+      //connection.playArbitraryInput(url) is what plays media file, shoutld work same for yt
       dispatcher = connection.playArbitraryInput(url).on('end', () => {
         songQueue.shift();
         if (songQueue.length > 0) {
@@ -229,6 +229,7 @@ var commands = {
         console.log('ya done fucked up');
       });
     }
+    // alert('alert test');
   },
   'clearqueue' : {
     usage: '',
