@@ -2,6 +2,10 @@
 
 ## Installation
 
+### Version of dependicies that work for me
+npm:  5.8.0
+node: v10.15.2 - package managers may install v12.x.x which could cause issues
+
 1. Install Node.js: https://nodejs.org/
 2. If using Windows, I generally install Cmder as a console emulator to avoid issues: http://cmder.net/
 3. Clone the repo or download a zip and unpackage it.
@@ -100,8 +104,11 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] Make !nextpage count continue to increase rather than restarting each page
 * [ ] move to next gen javascript w/babel
 * [ ] use uri/headers for plex.query as shown here:
-* [ ] albums queuing selection:
-* [ ] artist queuing:
+* [ ] albums queuing selection
+* [ ] artist queuing
+* [ ] read up on youtube api
+* [ ] direct file playing - dispatcher = connection.playArbitraryInput(url).on('end', () => ...
+* [ ] url command
 
 
 ```
@@ -116,5 +123,5 @@ return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL
 * [x] make code look less shitty
 * [x] fix !stop again
 * [x] make playlists
-* [x] albums queuing:
+* [x] albums queuing
 * [x] randomizing queue: `!shuffle`
