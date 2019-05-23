@@ -109,6 +109,7 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] read up on youtube api
 * [ ] direct file playing - dispatcher = connection.playArbitraryInput(url).on('end', () => ...
 * [ ] url command
+* [ ] retype readme and add a license
 
 
 ```
