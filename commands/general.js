@@ -33,14 +33,17 @@ var commands = {
            bool = true;
        }
        let maxAmount;
+       message.reply(`Clearing this channel of ${amount} messages.`);
        if (amount > 49) maxAmount = 50;
        else maxAmount = amount;
-       for (Channel.bulkDelete(maxAmount + 1, bool); amount >= 0; amount -= 50) {
-           if (amount > 49) maxAmount = 50;
-           else if (amount > 0) maxAmount = amount;
-           else break;
-           Channel.bulkDelete(maxAmount, bool);
-       }
+       setTimeout(function(){
+         for (Channel.bulkDelete(maxAmount + 1, bool); amount >= 0; amount -= 50) {
+             if (amount > 49) maxAmount = 50;
+             else if (amount > 0) maxAmount = amount;
+             else break;
+             Channel.bulkDelete(maxAmount, bool);
+         }
+       }, 2000);
      }
      catch (e) {
       console.log("error when clearing messages"+e);
@@ -52,17 +55,68 @@ var commands = {
     description: 'pingpong',
     process: function(client, message) {
       console.log(`${message.author.username} pinged ${message.guild.name} in ${message.channel.name}`);
+      console.log(`ping of ${client.ping}`);
       message.reply('*pong.*');
+      setTimeout(function(){
+        message.channel.bulkDelete(50, true);
+      }, 2000);
+      console.log(`cleared`);
     }
   },
-  // 'post' : {
-  //   usage: '',
-  //   description: 'clear',
-  //   process: function(client, message, num) {
-  //     // console.log(`automatically cleared music`);
-  //      message.channel.bulkDelete(num, true);
-  //   }
-  // },
+  'leave' : {
+    usage: '',
+    description: 'make bot leave the voice channel',
+    process: function(client, message) {
+      // if song request exists
+      // if (query.length > 0) {
+      //   plexOffset = 0; // reset paging
+      //   plexQuery = null; // reset query for !nextpage
+      //
+      //   findArtist(query, plexOffset, plexPageSize, message);
+      //   console.log(`${message.author.username} requested artist ${query} be played on ${message.guild.name} in ${message.channel.name}`);
+      // }
+      // else {
+      //   message.reply('**Please enter a song title**');
+      // }
+    }
+  },
+  'shutdown' : {
+    usage: '',
+    description: 'make bot leave the voice channel',
+    process: function(client, message) {
+      let Member = message.member;
+      if (!Member.hasPermission("ADMINISTRATOR")) {
+        console.log(`${message.author.username} attempted to shut this shit down`);
+        message.channel.bulkDelete(10, true);
+        message.reply('You need to be a server Administrator to shut the bot down from here.');
+        return;
+      }
+      else{
+        console.log(`${message.author.username} actually did shut this shit down`);
+        // message.channel.bulkDelete(10, true);
+        message.reply('Shutting the bot down in 5s.');
+        setTimeout(function(){
+          message.reply('Shutting the bot down in 4s.');
+        }, 1000);
+        setTimeout(function(){
+          message.reply('Shutting the bot down in 3s.');
+        }, 2000);
+        setTimeout(function(){
+          message.reply('Shutting the bot down in 2s.');
+        }, 3000);
+        setTimeout(function(){
+          message.reply('Shutting the bot down in 1s.');
+        }, 4000);
+        setTimeout(function(){
+          message.reply('Shutting the bot down in 0s.');
+          message.channel.bulkDelete(10, true);
+        }, 5000);
+        setTimeout(function(){
+          client.destroy();
+        }, 6000);
+      }
+    }
+  },
 };
 
 module.exports = commands;
