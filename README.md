@@ -3,8 +3,8 @@
 ## Installation
 
 ### Version of dependicies that work for me
-npm:  5.8.0
-node: v10.15.2 - package managers may install v12.x.x which could cause issues
+`npm:  5.8.0
+node: v10.15.2 - package managers may install v12.x.x which could cause issues`
 
 1. Install Node.js: https://nodejs.org/
 2. If using Windows, I generally install Cmder as a console emulator to avoid issues: http://cmder.net/
@@ -63,7 +63,7 @@ If I am missing any steps, feel free to reach out or open  an issue/bug in the I
 ***
 ## Customization
 
-Update the `config\keys.js` file with your information:
+Update the `config\keys template.js` file with your information:
 
 ```javascript
 module.exports = {
@@ -74,7 +74,7 @@ module.exports = {
 };
 ```
 
-And update the `config\plex.js` file with your Plex information:
+And update the `config\plex template.js` file with your Plex information:
 
 ```javascript
 module.exports= {
@@ -106,13 +106,13 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] use uri/headers for plex.query as shown here:
 * [ ] albums queuing selection
 * [ ] artist queuing
-* [ ] read up on youtube api
+* [ ] read up on youtube api - git@github.com:Malexion/Rhythm-Bot.git https://duckduckgo.com/?q=github+discord+youtube+bot&atb=v126-7__&ia=web
 * [ ] direct file playing - dispatcher = connection.playArbitraryInput(url).on('end', () => ...
 * [ ] url command
 * [ ] retype readme and add a license
 
 
-```
+```javascript
 return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL' } }).then(result => {
     expect(result).to.be.an('object');
     nockServer.done();
