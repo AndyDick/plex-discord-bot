@@ -52,7 +52,7 @@ var discordclient = null;
 function findSong(query, offset, pageSize, message) {
   plex.query('/search/?type=10&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
     tracks = res.MediaContainer.Metadata;
-    console.log("tracks "+ tracks);
+    // console.log("tracks "+ tracks);
 
     var resultSize = res.MediaContainer.size;
     plexQuery = query; // set query for !nextpage
@@ -64,7 +64,7 @@ function findSong(query, offset, pageSize, message) {
     if (resultSize == 1 && offset == 0) {
       songKey = 0;
       // add song to queue
-      addToQueue(songKey, tracks, message,false);
+      addToQueue(songKey, tracks, message,false);//add type field
     }
     else if (resultSize > 1) {
       for (var t = 0; t < tracks.length; t++) {
@@ -91,26 +91,71 @@ function findSong(query, offset, pageSize, message) {
 function findAlbum(query, offset, pageSize, message) {
   plex.query('/search/?type=9&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
     albums = res.MediaContainer.Metadata;
-    console.log(`album key ${albums[0].key}`);
+    // tracks = res;
+    var querysize = res.MediaContainer.size;
+    console.log(`result size ${querysize}`);
+    if (querysize==0) {
+      console.log(`no album matching that`);
+    }
+    else if(querysize==1){
+      plex.query(albums[0].key).then(function(res1) {
+        // console.log(`album artist ${res1.MediaContainer.title1}`);// console.log(`album title ${res1.MediaContainer.title2}`);// console.log(`album year ${res1.MediaContainer.parentYear}`);// console.log(`album count ${res1.MediaContainer.size}`);
 
-    plex.query(albums[0].key).then(function(res1) {
-      console.log(`album artist ${res1.MediaContainer.title1}`);
-      console.log(`album title ${res1.MediaContainer.title2}`);
-      console.log(`album year ${res1.MediaContainer.parentYear}`);
-      console.log(`album count ${res1.MediaContainer.size}`);
-      addToQueue(0, res1.MediaContainer.Metadata, message, false);
-      for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
-        addToQueue(i, res1.MediaContainer.Metadata, message, true);
-      }
-    }, function (err) {
-      console.log('narp');
-    });
+        addToQueue(0, res1.MediaContainer.Metadata, message, false);
+        for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
+          addToQueue(i, res1.MediaContainer.Metadata, message, true);
+        }
+      }, function (err) {
+        console.log(`couldn't query for single album`);
+      });
+  }
   }, function (err) {
-    console.log('narp');
+    console.log(`couldn't query for albums`);
+  });
+}
+
+function findArtist(query, offset, pageSize, message) {
+  plex.query('/search/?type=8&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
+    albums = res.MediaContainer.Metadata;
+    // tracks = res1;
+    var querysize = res.MediaContainer.size;
+    console.log(`result size ${querysize}`);
+    console.log(`albums[0].key ${albums[0].key}`);
+    if (querysize==0) {
+      console.log(`no album matching that`);
+    }
+    else if(querysize==1){
+      plex.query(albums[0].key).then(function(res1) {
+        // console.log(`album artist ${res1.MediaContainer.title1}`);// console.log(`album title ${res1.MediaContainer.title2}`);// console.log(`album year ${res1.MediaContainer.parentYear}`);// console.log(`album count ${res1.MediaContainer.size}`);
+        console.log(`res1 size ${res1.MediaContainer.size}`);
+        // addToQueue(0, res1.MediaContainer.Metadata, message, false);
+        //add album
+        plex.query(res1.MediaContainer.Metadata[0].key).then(function(res2) {
+            addToQueue(0, res2.MediaContainer.Metadata, message, false);
+        }, function (err) {
+          console.log(`couldn't query for single album`);
+        });
+        for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
+          //add tracks from album
+          console.log(`res1 album ${res1.MediaContainer.Metadata[0].key}`);
+          plex.query(res1.MediaContainer.Metadata[i].key).then(function(res2) {
+            for (var i = 0; i < Number(res2.MediaContainer.size); i++) {
+              addToQueue(i, res2.MediaContainer.Metadata, message, true);
+            }
+          }, function (err) {
+            console.log(`couldn't query for single album`);
+          });
+        }
+      }, function (err) {
+        console.log(`couldn't query for single album`);
+      });
+  }
+  }, function (err) {
+    console.log(`couldn't query for albums`);
   });
 }
 // not sure if ill need this
-function addToQueue(songNumber, tracks, message, album) {
+function addToQueue(songNumber, tracks, message, album) {//add type field
   if (songNumber > -1){
     var key = tracks[songNumber].Media[0].Part[0].key;
     console.log('key being added '+key);
@@ -184,6 +229,7 @@ function playSong(message) {
         },
       }
     };
+    console.log(`now playing ${songQueue[0].artist} - ${songQueue[0].title}`)
     message.channel.send('**Now playing:**\n', embedObj);
     //message.channel.send('**♪ ♫ ♪ Playing: ' + songQueue[0].artist + ' - ' + songQueue[0].title + ' ♪ ♫ ♪**');
   }
@@ -194,8 +240,7 @@ function playSong(message) {
 
 // run at end of songQueue / remove bot from voiceChannel
 function playbackCompletion(message) {
-  // genCommands['post'].process(discordclient, message,50);
-  message.channel.bulkDelete(50, true);
+  message.channel.bulkDelete(10, true);
   conn.disconnect();
   voiceChannel.leave();
   isPlaying = false;
@@ -379,6 +424,9 @@ var commands = {
           }
         };
         message.channel.send('**Update:**', embedObj);
+        setTimeout(function(){
+              message.channel.bulkDelete(2, true);
+        }, 2000);
       }
       else {
         message.reply('**Nothing currently playing.**');
@@ -390,26 +438,72 @@ var commands = {
     description: 'displays current song queue',
     process: function(client, message) {
       //var messageLines = '\n**Song Queue:**\n\n';
-
       var messageLines = '';
-
       if (songQueue.length > 0) {
         for (var t = 0; t < songQueue.length; t++) {
           messageLines += (t+1) + ' - ' + songQueue[t].artist + ' - ' + songQueue[t].title + '\n';
         }
-        console.log(`${message.author.username} viewed the current queue on ${message.guild.name} in ${message.channel.name}`);
-
-        messageLines += `\n***${prefix}removesong <number>** to remove a song*`;
-        messageLines += `\n***${prefix}skip** to skip the current song*`;
-
-        var embedObj = {
-          embed: {
-            color: 2389639,
-            description: messageLines,
-          }
-        };
-
-        message.channel.send('\n**Song Queue:**\n\n', embedObj);
+        if (messageLines.length < 6000){
+          console.log(`${message.author.username} viewed the current queue on ${message.guild.name} in ${message.channel.name}`);
+          messageLines += `\n***${prefix}removesong <number>** to remove a song*`;
+          messageLines += `\n***${prefix}skip** to skip the current song*`;
+          var embedObj = {
+            embed: {
+              color: 2389639,
+              description: messageLines,
+            }
+          };
+          message.channel.send('\n**Song Queue:**\n\n', embedObj);
+        }
+        else{
+          // message.channel.send(`\n**Song Queue:**\n
+          //   The queue is a bit long to print in full but contains ${songQueue.length} songs.\n
+          //   Now playing: ${songQueue[0].artist} - ${songQueue[0].title}\n
+          //   Next up: ${songQueue[1].artist} - ${songQueue[1].title}`);
+          // The queue is a bit long to print in full
+            var embedObj = {
+              embed: {
+                color: 4251856,
+                fields:
+                [
+                  {
+                    name: 'The queue is a bit long to print in full:',
+                    value: '*Now playing:*',
+                    inline: false
+                  },
+                  {
+                    name: 'Artist',
+                    value: songQueue[0].artist,
+                    inline: true
+                  },
+                  {
+                    name: 'Title',
+                    value: songQueue[0].title,
+                    inline: true
+                  },
+                  {
+                    name: '\u200b',
+                    value: '*Next up:*',
+                    inline: false
+                  },
+                  {
+                    name: 'Artist',
+                    value: songQueue[1].artist,
+                    inline: true
+                  },
+                  {
+                    name: 'Title',
+                    value: songQueue[1].title,
+                    inline: true
+                  },
+                ],
+                footer: {
+                  text: songQueue.length + ' song(s) in the queue'
+                },
+              }
+            };
+            message.channel.send('**Song Queue:**\n', embedObj);
+        }
       }
       else {
         message.reply('**There are no songs in the queue.**');
@@ -442,7 +536,7 @@ var commands = {
       }
     }
   },
-  'playalbum' : {
+  'playa' : {
     usage: '<album>',
     description: 'bot will join voice channel and play album if one album available.  if more than one, bot will return a list to choose from',
     process: function(client, message, query) {
@@ -451,9 +545,39 @@ var commands = {
         plexOffset = 0; // reset paging
         plexQuery = null; // reset query for !nextpage
 
-        // findSong(query, plexOffset, plexPageSize, message);
         findAlbum(query, plexOffset, plexPageSize, message);
         console.log(`${message.author.username} requested ${query} be played on ${message.guild.name} in ${message.channel.name}`);
+      }
+      else {
+        message.reply('**Please enter a song title**');
+      }
+    }
+  },
+  // 'playalbum' : {    //still to be implemented
+  //   usage: '<album number>',
+  //   description: 'play an album from the generated album list',
+  //   process: function(client, message, query) {
+  //     var albumNumber = query;
+  //     albumNumber = parseInt(albumNumber);
+  //     albumNumber = albumNumber - 1;
+  //     console.log(`${message.author.username} selected ${albumNumber} from the list`);
+  //     addToQueue(albumNumber, tracks, message,false);
+  //     for (var i = 0; i < array.length; i++) {
+  //       array[i]
+  //     }
+  //   }
+  // },
+  'playartist' : {
+    usage: '<artist>',
+    description: 'play artist',
+    process: function(client, message, query) {
+      // if song request exists
+      if (query.length > 0) {
+        plexOffset = 0; // reset paging
+        plexQuery = null; // reset query for !nextpage
+
+        findArtist(query, plexOffset, plexPageSize, message);
+        console.log(`${message.author.username} requested artist ${query} be played on ${message.guild.name} in ${message.channel.name}`);
       }
       else {
         message.reply('**Please enter a song title**');
