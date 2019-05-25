@@ -24,6 +24,7 @@ var commands = {
         let Channel = message.channel;
         if (!Member.hasPermission("ADMINISTRATOR")) return; // Does nothing if the author does not have administrator permission.
         let amount = parseInt(args[1],10); // amount = a number entered.
+        amount++;
         // console.log("amount ",amount);
         // if (!amount) return errors.missArgs(Member, errorChannel, "r!clear 1-200 \`(number)\`"); // If amount is missing, then it raises an error.
         let bool = false;
@@ -92,28 +93,25 @@ var commands = {
         return;
       }
       else{
-        console.log(`${message.author.username} actually did shut this shit down`);
+        console.log(`${message.author.username} actually did shut this shit down.`);
         // message.channel.bulkDelete(10, true);
-        message.reply('Shutting the bot down in 5s.');
+        message.channel.send('Shutting the bot down in 5s.');
+        // setTimeout(function(){
+        //   message.channel.send('Shutting the bot down in 4s.');
+        // }, 1000);
+        // setTimeout(function(){
+        //   message.channel.send('Shutting the bot down in 3s.');
+        // }, 2000);
+        // setTimeout(function(){
+        //   message.channel.send('Shutting the bot down in 2s.');
+        // }, 3000);
         setTimeout(function(){
-          message.reply('Shutting the bot down in 4s.');
-        }, 1000);
-        setTimeout(function(){
-          message.reply('Shutting the bot down in 3s.');
-        }, 2000);
-        setTimeout(function(){
-          message.reply('Shutting the bot down in 2s.');
-        }, 3000);
-        setTimeout(function(){
-          message.reply('Shutting the bot down in 1s.');
+          message.channel.send('Shutting the bot down in 1s.');
+          message.channel.bulkDelete(3, true);
         }, 4000);
         setTimeout(function(){
-          message.reply('Shutting the bot down in 0s.');
-          message.channel.bulkDelete(10, true);
-        }, 5000);
-        setTimeout(function(){
           client.destroy();
-        }, 6000);
+        }, 5000);
       }
     }
   },
