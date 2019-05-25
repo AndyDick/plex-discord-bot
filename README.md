@@ -46,12 +46,19 @@ If I am missing any steps, feel free to reach out or open  an issue/bug in the I
 ***
 
 ## Commands
+### General commands
+* `!clear <number of messages>` : removes messages within the last 14 days up to the number specified
+* `!shutdown` : shuts the bot down if the user is an admin
+* `!ping` : returns `pong` and logs the bots pings
+* `!leave` : makes the bot leave the voice channel if its connected to one
+* `!join` : makes the bot join the user's voice channel if they are connected to one
 
+### Playing from Plex
 * `!plexTest` : a test to see make sure your Plex server is connected properly
 * `!clearqueue` : clears all songs in queue
 * `!nextpage` : get next page of songs if desired song is not listed
 * `!pause` : pauses current song if one is playing
-* `!play <song title or artist>` : bot will join voice channel and play song if one song available.  if more than one, bot will return a list to choose from
+* `!play <query to search for>` : bot will join voice channel and play song if one song available.  if more than one, bot will return a list to choose from
 * `!playsong <song number>` : plays a song from the generated song list
 * `!playa <album>` : plays an album
 * `!playartist <artist>` : play an entire discography
@@ -60,7 +67,7 @@ If I am missing any steps, feel free to reach out or open  an issue/bug in the I
 * `!skip` : skips the current song if one is playing and plays the next song in queue if it exists
 * `!stop` : stops song if one is playing
 * `!viewqueue` : displays current song queue
-* `!clear <number of messages>` : removes messages within the last 14 days up to the number specified
+
 
 ***
 ## Customization
@@ -105,7 +112,7 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 ## To Do:
 * [ ] Make !nextpage count continue to increase rather than restarting each page
 * [ ] move to next gen javascript w/babel
-* [ ] use uri/headers for plex.query as shown here:
+* [ ] use uri/headers for plex.query as shown at end
 * [ ] albums queuing selection
 * [ ] artist queuing
 * [ ] read up on youtube api - Rhythm-Bot on github
@@ -113,6 +120,15 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] url command
 * [ ] retype readme and add a license
 * [ ] separate commands into js files
+* [ ] make code look less shitty
+* [ ] pulling of lyrics
+
+## Completed:
+* [x] handle case where user types `!play` when another song is playing
+* [x] fix !stop again
+* [x] make playlists
+* [x] albums queuing
+* [x] randomizing queue: `!shuffle`
 
 
 ```javascript
@@ -121,11 +137,3 @@ return api.query({ uri: '/', extraHeaders: { 'X-TEST-HEADER': 'X-TEST-HEADER-VAL
     nockServer.done();
 });
 ```
-
-## Completed:
-* [x] handle case where user types `!play` when another song is playing
-* [x] make code look less shitty
-* [x] fix !stop again
-* [x] make playlists
-* [x] albums queuing
-* [x] randomizing queue: `!shuffle`
