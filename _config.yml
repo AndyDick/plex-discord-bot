@@ -1,1 +1,14 @@
 theme: jekyll-theme-midnight
+
+show_downloads: true
+
+github_username: jadonwolffs
+
+authors:
+  jadon:
+    name: Jadon Wolffs
+    site: http://jadonwolffs.github.io
+    twitter: wolffshots
+    github: jadonwolffs
+    instagram: wolffshots
+    byline: programmer and a tinkerer.
