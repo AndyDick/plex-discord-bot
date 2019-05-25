@@ -53,6 +53,8 @@ If I am missing any steps, feel free to reach out or open  an issue/bug in the I
 * `!pause` : pauses current song if one is playing
 * `!play <song title or artist>` : bot will join voice channel and play song if one song available.  if more than one, bot will return a list to choose from
 * `!playsong <song number>` : plays a song from the generated song list
+* `!playa <album>` : plays an album
+* `!playartist <artist>` : play an entire discography
 * `!removesong <song queue number>` : removes song by index from the song queue
 * `!resume` : resumes song if previously paused
 * `!skip` : skips the current song if one is playing and plays the next song in queue if it exists
@@ -106,10 +108,11 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] use uri/headers for plex.query as shown here:
 * [ ] albums queuing selection
 * [ ] artist queuing
-* [ ] read up on youtube api - git@github.com:Malexion/Rhythm-Bot.git https://duckduckgo.com/?q=github+discord+youtube+bot&atb=v126-7__&ia=web
+* [ ] read up on youtube api - Rhythm-Bot on github
 * [ ] direct file playing - dispatcher = connection.playArbitraryInput(url).on('end', () => ...
 * [ ] url command
 * [ ] retype readme and add a license
+* [ ] separate commands into js files
 
 
 ```javascript
