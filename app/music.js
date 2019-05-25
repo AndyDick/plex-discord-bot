@@ -1,7 +1,10 @@
 module.exports = function(client) {
   // plex commands -------------------------------------------------------------
-  var plexCommands = require('../commands/plex');
-  var genCommands = require('../commands/general');
+  // var plexCommands = require('../commands/plex');
+  // var genCommands = require('../commands/general');
+  // var ping = require('../commands/ping');
+  var allcommands = require('../commands');
+  console.log(`commands: ${allcommands.size}`)
   var botConfig = require('../config/bot');
   var prefix = botConfig.prefix;
 
@@ -21,6 +24,7 @@ module.exports = function(client) {
       var query = msg.substring(msg.indexOf(' ')+1);
       var pcmd = plexCommands[cmdTxt];
       var gcmd = genCommands[cmdTxt];
+      var pcm = ping[cmdTxt];
       if (pcmd){
         try {
           pcmd.process(client, message, query);
@@ -36,7 +40,24 @@ module.exports = function(client) {
         catch (e) {
           console.log(e);
         }
+      }else if(pcm){
+        try {
+          pcm.process(client, message, query);
+        }
+        catch (e) {
+          console.log(e);
+        }
       }
+      // else if(true)
+      // {
+      //   // [cmdTxt].process();
+      //   try {
+      //     cmdTxt.process(client, message, query);
+      //   }
+      //   catch (e) {
+      //     console.log(e);
+      //   }
+      // }
       else {
         message.reply('**Sorry, that\'s not a command.**');
       }
