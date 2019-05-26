@@ -119,9 +119,11 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] direct file playing - dispatcher = connection.playArbitraryInput(url).on('end', () => ...
 * [ ] url command
 * [ ] retype readme and add a license
-* [ ] separate commands into js files
+* [ ] separate commands into js files - partially done
 * [ ] make code look less shitty
 * [ ] pulling of lyrics
+* [ ] fix `found = false` in `bot.js`
+* [ ] add timing to shutdown command and `shutdown now` to shutdown immediately, possibly -r to restart
 
 ## Completed:
 * [x] handle case where user types `!play` when another song is playing
