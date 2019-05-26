@@ -8,6 +8,6 @@ var keys = require('./config/keys.js');
 const client = new Discord.Client();
 
 // bot functions ---------------------------------------------------------------
-require('./app/music.js')(client);
+require('./app/bot.js')(client);
 
 client.login(keys.botToken);
