@@ -8,7 +8,7 @@ var prefix = botConfig.prefix;
 
 // plex commands -------------------------------------------------------------
 var plexCommands = require('../commands/plex');
-var genCommands = require('../commands/general');
+// var genCommands = require('../commands/general');
 
 // plex client ---------------------------------------------------------------
 var plex = new PlexAPI({
@@ -44,7 +44,7 @@ var songQueue = []; // will be used for queueing songs
 var dispatcher = null;
 var voiceChannel = null;
 var conn = null;
-var volume = 0.2;
+
 
 // plex functions ------------------------------------------------------------
 var discordclient = null;
@@ -553,20 +553,7 @@ var commands = {
       }
     }
   },
-  // 'playalbum' : {    //still to be implemented
-  //   usage: '<album number>',
-  //   description: 'play an album from the generated album list',
-  //   process: function(client, message, query) {
-  //     var albumNumber = query;
-  //     albumNumber = parseInt(albumNumber);
-  //     albumNumber = albumNumber - 1;
-  //     console.log(`${message.author.username} selected ${albumNumber} from the list`);
-  //     addToQueue(albumNumber, tracks, message,false);
-  //     for (var i = 0; i < array.length; i++) {
-  //       array[i]
-  //     }
-  //   }
-  // },
+
   'playartist' : {
     usage: '<artist>',
     description: 'play artist',
