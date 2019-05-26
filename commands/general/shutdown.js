@@ -1,7 +1,7 @@
 var commands = {
   'shutdown' : {
     usage: '',
-    description: 'make bot leave the voice channel',
+    description: 'kill the bot',
     process: function(client, message) {
       let Member = message.member;
       if (!Member.hasPermission("ADMINISTRATOR")) {
@@ -25,7 +25,7 @@ var commands = {
   },
   'sd' : {
     usage: '',
-    description: 'make bot leave the voice channel',
+    description: 'kill the bot',
     process: function(client, message) {
       let Member = message.member;
       if (!Member.hasPermission("ADMINISTRATOR")) {
