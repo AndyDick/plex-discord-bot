@@ -127,7 +127,6 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [ ] pulling of lyrics
 * [ ] fix `found = false` in `bot.js`
 * [ ] add timing to shutdown command and `shutdown now` to shutdown immediately, possibly -r to restart
-* [ ] add default value to `clear` to prevent NaN error
 
 ## Completed:
 * [x] handle case where user types `!play` when another song is playing
@@ -135,6 +134,7 @@ If you see any bugs or have any suggestions, use the issue tracker.  Thanks!
 * [x] make playlists
 * [x] albums queuing
 * [x] randomizing queue: `!shuffle`
+* [x] add default value to `clear` to prevent NaN error
 
 
 ```javascript
