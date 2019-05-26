@@ -11,17 +11,19 @@ var commands = {
         let Channel = message.channel;
         if (!Member.hasPermission("ADMINISTRATOR")) return; // Does nothing if the author does not have administrator permission.
         let amount = parseInt(args[1],10); // amount = a number entered.
+        if (!amount) {
+          amount = 50;
+          message.reply(`No number of messages specified, removing last ${amount}`);
+        }
         amount++;
-        // console.log("amount ",amount);
-        // if (!amount) return errors.missArgs(Member, errorChannel, "r!clear 1-200 \`(number)\`"); // If amount is missing, then it raises an error.
         let bool = false;
-        if (!Member.id === server.ownerID) { // Bypass for the server owner.
-            if (amount >= 400) return errorChannel.send(`:x: You can\'t clear more than 400 messages! ${Member}`); // If amount is over 200 then it raises an error.
+        if (!Member.id === server.ownerID) {
+            if (amount >= 400) return errorChannel.send(`:x: You can\'t clear more than 400 messages! ${Member}`);
        } else {
            bool = true;
        }
        let maxAmount;
-       message.reply(`Clearing this channel of ${amount-1} messages.`);
+       message.channel.send(`Clearing this channel of ${amount-1} messages.`);
        if (amount > 49) maxAmount = 50;
        else maxAmount = amount;
        setTimeout(function(){

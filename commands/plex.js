@@ -99,7 +99,6 @@ function findAlbum(query, offset, pageSize, message) {
     }
     else if(querysize==1){
       plex.query(albums[0].key).then(function(res1) {
-        // console.log(`album artist ${res1.MediaContainer.title1}`);// console.log(`album title ${res1.MediaContainer.title2}`);// console.log(`album year ${res1.MediaContainer.parentYear}`);// console.log(`album count ${res1.MediaContainer.size}`);
 
         addToQueue(0, res1.MediaContainer.Metadata, message, false);
         for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
@@ -115,44 +114,47 @@ function findAlbum(query, offset, pageSize, message) {
 }
 
 function findArtist(query, offset, pageSize, message) {
-  plex.query('/search/?type=8&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
-    albums = res.MediaContainer.Metadata;
-    // tracks = res1;
-    var querysize = res.MediaContainer.size;
-    console.log(`result size ${querysize}`);
-    console.log(`albums[0].key ${albums[0].key}`);
-    if (querysize==0) {
-      console.log(`no album matching that`);
-    }
-    else if(querysize==1){
-      plex.query(albums[0].key).then(function(res1) {
-        // console.log(`album artist ${res1.MediaContainer.title1}`);// console.log(`album title ${res1.MediaContainer.title2}`);// console.log(`album year ${res1.MediaContainer.parentYear}`);// console.log(`album count ${res1.MediaContainer.size}`);
-        console.log(`res1 size ${res1.MediaContainer.size}`);
-        // addToQueue(0, res1.MediaContainer.Metadata, message, false);
-        //add album
-        plex.query(res1.MediaContainer.Metadata[0].key).then(function(res2) {
-            addToQueue(0, res2.MediaContainer.Metadata, message, false);
-        }, function (err) {
-          console.log(`couldn't query for single album`);
-        });
-        for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
-          //add tracks from album
-          console.log(`res1 album ${res1.MediaContainer.Metadata[0].key}`);
-          plex.query(res1.MediaContainer.Metadata[i].key).then(function(res2) {
-            for (var i = 0; i < Number(res2.MediaContainer.size); i++) {
-              addToQueue(i, res2.MediaContainer.Metadata, message, true);
-            }
+  voiceChannel = message.member.voiceChannel;
+  // console.log(`message ${message}`);
+  if (voiceChannel) {
+    plex.query('/search/?type=8&query=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
+      albums = res.MediaContainer.Metadata;
+      // tracks = res1;
+      var querysize = res.MediaContainer.size;
+      console.log(`result size ${querysize}`);
+      console.log(`albums[0].key ${albums[0].key}`);
+      if (querysize==0) {
+        console.log(`no album matching that`);
+      }
+      else if(querysize==1){
+        plex.query(albums[0].key).then(function(res1) {
+          console.log(`res1 size ${res1.MediaContainer.size}`);
+          plex.query(res1.MediaContainer.Metadata[0].key).then(function(res2) {
+              addToQueue(0, res2.MediaContainer.Metadata, message, false);
           }, function (err) {
             console.log(`couldn't query for single album`);
           });
-        }
-      }, function (err) {
-        console.log(`couldn't query for single album`);
-      });
+          for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
+            //add tracks from album
+            console.log(`res1 album ${res1.MediaContainer.Metadata[0].key}`);
+            plex.query(res1.MediaContainer.Metadata[i].key).then(function(res2) {
+              for (var i = 0; i < Number(res2.MediaContainer.size); i++) {
+                addToQueue(i, res2.MediaContainer.Metadata, message, true);
+              }
+            }, function (err) {
+              console.log(`couldn't query for single album`);
+            });
+          }
+        }, function (err) {
+          console.log(`couldn't query for single album`);
+        });
+    }
+    }, function (err) {
+      console.log(`couldn't query for albums`);
+    });
+  }else {
+    message.reply('**Please join a voice channel first before requesting a song.**')
   }
-  }, function (err) {
-    console.log(`couldn't query for albums`);
-  });
 }
 // not sure if ill need this
 function addToQueue(songNumber, tracks, message, album) {//add type field
@@ -234,7 +236,7 @@ function playSong(message) {
     //message.channel.send('**♪ ♫ ♪ Playing: ' + songQueue[0].artist + ' - ' + songQueue[0].title + ' ♪ ♫ ♪**');
   }
   else {
-    message.reply('**Please join a voice channel first before requesting a song.**')
+    message.reply('**Please join a voice channel first before requesting a song.**');
   }
 }
 
@@ -553,8 +555,24 @@ var commands = {
       }
     }
   },
-
   'playartist' : {
+    usage: '<artist>',
+    description: 'play artist',
+    process: function(client, message, query) {
+      // if song request exists
+      if (query.length > 0) {
+        plexOffset = 0; // reset paging
+        plexQuery = null; // reset query for !nextpage
+
+        findArtist(query, plexOffset, plexPageSize, message);
+        console.log(`${message.author.username} requested artist ${query} be played on ${message.guild.name} in ${message.channel.name}`);
+      }
+      else {
+        message.reply('**Please enter a song title**');
+      }
+    }
+  },
+  'pa' : {
     usage: '<artist>',
     description: 'play artist',
     process: function(client, message, query) {
