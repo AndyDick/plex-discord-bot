@@ -3,8 +3,9 @@
 ## Installation
 
 ### Version of dependicies that work for me
-`npm:  5.8.0
-node: v10.15.2 - package managers may install v12.x.x which could cause issues`
+`npm:  5.8.0`
+`node: v10.15.2 - package managers may install v12.x.x which could cause issues`
+`ffmpeg 4.1.3-0ubuntu1`
 
 1. Install Node.js: https://nodejs.org/
 2. If using Windows, I generally install Cmder as a console emulator to avoid issues: http://cmder.net/
