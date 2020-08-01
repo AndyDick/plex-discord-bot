@@ -45,7 +45,6 @@ var dispatcher = null;
 var voiceChannel = null;
 var conn = null;
 
-
 // plex functions ------------------------------------------------------------
 var discordclient = null;
 // find song when provided with query string, offset, pagesize, and message
@@ -62,9 +61,13 @@ function findSong(query, offset, pageSize, message) {
     var artist = '';
 
     if (resultSize == 1 && offset == 0) {
+      songQueue = []; // Clear the queue
+      wasPlaying = isPlaying;
       songKey = 0;
-      // add song to queue
       addToQueue(songKey, tracks, message,false);//add type field
+      if (wasPlaying) {
+        dispatcher.end();
+      }
     }
     else if (resultSize > 1) {
       for (var t = 0; t < tracks.length; t++) {
@@ -85,6 +88,36 @@ function findSong(query, offset, pageSize, message) {
     }
   }, function (err) {
     console.log('narp');
+  });
+}
+
+function findPlaylist(query, offset, pageSize, message) {
+  plex.query('/playlists?title=' + query + '&X-Plex-Container-Start=' + offset + '&X-Plex-Container-Size=' + pageSize).then(function(res) {
+    playlists = res.MediaContainer.Metadata;
+    var querysize = res.MediaContainer.size;
+    console.log(`result size ${querysize}`);
+    if (querysize==0) {
+      console.log(`no playlist matching that`);
+    }
+    else if(querysize==1){
+      songQueue = []; // Clear the queue
+      plex.query(playlists[0].key).then(function(res1) {
+        wasPlaying = isPlaying;
+        playlistContent = res1.MediaContainer;
+        console.log(playlistContent.size);
+        addToQueue(0, res1.MediaContainer.Metadata, message, false);
+        for (var i = 1; i < Number(res1.MediaContainer.size); i++) {
+          addToQueue(i, res1.MediaContainer.Metadata, message, true);
+        }
+        if (wasPlaying) {
+          dispatcher.end();
+        }
+      }, function (err) {
+        console.log(`couldn't query for single playlist`);
+      });
+  }
+  }, function (err) {
+    console.log(`couldn't query for playlists`);
   });
 }
 
@@ -188,17 +221,20 @@ function addToQueue(songNumber, tracks, message, album) {//add type field
 // play song when provided with index number, track, and message
 function playSong(message) {
   voiceChannel = message.member.voiceChannel;
-  // console.log(`message ${message}`);
   if (voiceChannel) {
     voiceChannel.join().then(function(connection) {
       conn = connection;
       var url = PLEX_PLAY_START + songQueue[0].key + PLEX_PLAY_END;
 
       isPlaying = true;
-      //connection.playArbitraryInput(url) is what plays media file, shoutld work same for yt
       dispatcher = connection.playArbitraryInput(url).on('end', () => {
-        songQueue.shift();
         if (songQueue.length > 0) {
+          lastSong = songQueue.shift();
+          for (let i = songQueue.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [songQueue[i], songQueue[j]] = [songQueue[j], songQueue[i]];
+	  }
+          songQueue.push(lastSong);
           playSong(message);
         }
         // no songs left in queue, continue with playback completetion events
@@ -348,7 +384,12 @@ var commands = {
       songNumber = parseInt(songNumber);
       songNumber = songNumber - 1;
       console.log(`${message.author.username} selected ${songNumber} from the list`);
+      wasPlaying = isPlaying;
+      songQueue = [];
       addToQueue(songNumber, tracks, message,false);
+      if (wasPlaying) {
+        dispatcher.end();
+      }
     }
   },
   'removesong' : {
@@ -535,6 +576,24 @@ var commands = {
 
       for (var i = 1; i < songQueue.length; i++) {
         songQueue[i] = tempQueue[i-1];
+      }
+    }
+  },
+  'playlist' : {
+    usage: '<playlist>',
+    description: 'bot will join voice channel and play playlist if one playlist available.  if more than one, bot will return a list to choose from',
+    process: function(client, message, query) {
+      // if song request exists
+      if (query.length > 0) {
+        plexOffset = 0; // reset paging
+        plexQuery = null; // reset query for !nextpage
+
+        findPlaylist(query, plexOffset, plexPageSize, message);
+        console.log(`${message.author.username} requested ${query} be played on ${message.guild.name} in ${message.channel.name}`);
+//console.log("queue size is now:" + songQueue.length);
+      }
+      else {
+        message.reply('**Please enter a song title**');
       }
     }
   },
